@@ -1,0 +1,32 @@
+version: '3'
+services:
+  ruby:
+    image: ruby:3.2-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+      - bundle-data:/usr/local/bundle
+
+  azure-cli:
+    image: mcr.microsoft.com/azure-cli
+    environment:
+      AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+    depends_on:
+      - azurite
+    tty: true
+    stdin_open: true
+    working_dir: /scripts
+    command: /bin/bash
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000 -l /azurite -d /azurite/debug.log
+    working_dir: /azurite
+    volumes:
+      - azurite-data:/azurite
+
+volumes:
+  bundle-data:
+    driver: local
+  azurite-data:
+    driver: local
